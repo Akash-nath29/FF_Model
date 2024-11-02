@@ -1,15 +1,42 @@
-from ..functions import matmul, add_vectors, tanh
-import random
-
-class FeedforwardNN:
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        self.W1 = [[random.uniform(-0.01, 0.01) for _ in range(hidden_dim)] for _ in range(input_dim)]
-        self.b1 = [0 for _ in range(hidden_dim)]
-        self.W2 = [[random.uniform(-0.01, 0.01) for _ in range(output_dim)] for _ in range(hidden_dim)]
-        self.b2 = [0 for _ in range(output_dim)]
+class FeedForwardNetwork:
+    def __init__(self, vocab_size, embedding_dim):
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.weights_input = [[0.01 for _ in range(embedding_dim)] for _ in range(vocab_size)]
+        self.weights_hidden = [[0.01 for _ in range(embedding_dim)] for _ in range(embedding_dim)]
+        self.weights_output = [[0.01 for _ in range(vocab_size)] for _ in range(embedding_dim)]
     
-    def forward(self, x):
-        z1 = add_vectors(matmul([x], self.W1)[0], self.b1)
-        a1 = tanh(z1)
-        z2 = add_vectors(matmul([a1], self.W2)[0], self.b2)
-        return z2
+    def embed(self, token):
+        return self.weights_input[token]
+    
+    def predict(self, inputs):
+        hidden_layer = [0] * self.embedding_dim
+        
+        for token in inputs:
+            embedded_token = self.embed(token)
+            for i in range(self.embedding_dim):
+                hidden_layer[i] += embedded_token[i]
+
+        hidden_layer = [max(0, x) for x in hidden_layer]
+
+        exp_scores = [pow(2.718, x) for x in hidden_layer]
+        sum_exp_scores = sum(exp_scores)
+        probabilities = [score / sum_exp_scores for score in exp_scores]
+
+        return probabilities
+
+    def update_weights(self, X_batch, y_batch, learning_rate=0.01):
+        for x, y in zip(X_batch, y_batch):
+            predicted_probs = self.predict(x)
+            predicted_token = predicted_probs.index(max(predicted_probs))
+
+            for token in x:
+                for i in range(self.embedding_dim):
+                    self.weights_output[i][predicted_token] += learning_rate * (1 - predicted_probs[predicted_token])
+                    
+                    if predicted_token != y:
+                        self.weights_output[i][y] -= learning_rate * predicted_probs[y]
+
+            for token in x:
+                for i in range(self.embedding_dim):
+                    self.weights_input[token][i] += learning_rate * (1 - predicted_probs[y])

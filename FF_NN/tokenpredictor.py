@@ -1,11 +1,11 @@
-from ..functions import softmax
-from ..embeddings import Embedding
-from .nn import FeedforwardNN
+from functions import softmax
+from embeddings import Embedding
+from .nn import FeedForwardNetwork
 
 class NextTokenPredictor:
     def __init__(self, vocab_size, embed_dim, hidden_dim):
         self.embedding = Embedding(vocab_size, embed_dim)
-        self.model = FeedforwardNN(embed_dim, hidden_dim, vocab_size)
+        self.model = FeedForwardNetwork(embed_dim, hidden_dim, vocab_size)
     
     def predict(self, sequence):
         embedded_sequence = self.embedding.get_embeddings_for_sequence(sequence)
