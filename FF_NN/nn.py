@@ -30,7 +30,15 @@ class FeedForwardNetwork:
             predicted_probs = self.predict(x)
             predicted_token = predicted_probs.index(max(predicted_probs))
 
+            if y < 0 or y >= self.vocab_size:
+                print(f"Warning: Target token {y} is out of bounds.")
+                continue
+
             for token in x:
+                if token < 0 or token >= self.vocab_size:
+                    print(f"Warning: Input token {token} is out of bounds.")
+                    continue
+
                 for i in range(self.embedding_dim):
                     self.weights_output[i][predicted_token] += learning_rate * (1 - predicted_probs[predicted_token])
                     
@@ -38,5 +46,9 @@ class FeedForwardNetwork:
                         self.weights_output[i][y] -= learning_rate * predicted_probs[y]
 
             for token in x:
+                if token < 0 or token >= self.vocab_size:
+                    print(f"Warning: Input token {token} is out of bounds.")
+                    continue
                 for i in range(self.embedding_dim):
                     self.weights_input[token][i] += learning_rate * (1 - predicted_probs[y])
+
