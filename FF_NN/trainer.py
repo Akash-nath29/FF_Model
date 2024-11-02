@@ -30,16 +30,13 @@ class Trainer:
         for epoch in range(epochs):
             total_loss = 0
             for sequence, target in zip(sequences, targets):
-                # Forward pass
                 embedded_sequence = self.model.embedding.get_embeddings_for_sequence(sequence)
                 input_representation = [sum(x) / len(embedded_sequence) for x in zip(*embedded_sequence)]
                 logits = self.model.forward(input_representation)
                 
-                # Compute loss
                 loss, probs = self.cross_entropy_loss(logits, target)
                 total_loss += loss
                 
-                # Backpropagation
                 hidden_layer_output = tanh(add_vectors(matmul([input_representation], self.model.W1)[0], self.model.b1))
                 self.backpropagate(input_representation, hidden_layer_output, probs, target)
             
